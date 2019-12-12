@@ -12,6 +12,8 @@ public class RestTemplateConfiguration {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
+        Long longReadTimeout;
+        Long longConnectionTimeout;
         Duration durationTime = Duration.ofSeconds(10);
         return restTemplateBuilder.setConnectTimeout(durationTime).setReadTimeout(durationTime).build();
     }

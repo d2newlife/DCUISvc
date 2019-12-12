@@ -1,5 +1,6 @@
 package com.duanegrey.dcuisvc.config;
 
+import com.duanegrey.dcuisvc.util.CGenLib;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -10,15 +11,16 @@ import org.springframework.stereotype.Component;
 public class CAppProperties {
     private String dataHost;
     private String dataPort;
-    private long lgReadTimeout;
-    private long lgConnectTimeout;
+    private String szReadTimeout;
+    private String szConnectionTimeout;
+    CGenLib genLib = new CGenLib();
 
     @Autowired
     public CAppProperties(Environment env) {
         this.dataHost = env.getProperty("DCUI_DATAHOST");
         this.dataPort = env.getProperty("DCUI_DATAPORT");
-        this.dataHost = env.getProperty("DCUI_READTIMEOUT");
-        this.dataPort = env.getProperty("DCUI_CONNECTTIMEOUT");
+        this.szReadTimeout = env.getProperty("DCUI_READTIMEOUT");
+        this.szConnectionTimeout = env.getProperty("DCUI_CONNECTTIMEOUT");
     }
 
     public String getDataHost() {
@@ -30,11 +32,11 @@ public class CAppProperties {
     }
 
     public long getLgReadTimeout() {
-        return lgReadTimeout;
+        return genLib.StringToLong(szReadTimeout,10000);
     }
 
     public long getLgConnectTimeout() {
-        return lgConnectTimeout;
+        return genLib.StringToLong(szConnectionTimeout,10000);
     }
 
     @Override

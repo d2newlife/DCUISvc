@@ -400,12 +400,27 @@ public class CGenLib {
                     tsNow = new Timestamp(Instant.now().toEpochMilli());
                     tsRange = subtractYears(tsNow, 10);
                     break;
+                case "20y":
+                    tsNow = new Timestamp(Instant.now().toEpochMilli());
+                    tsRange = subtractYears(tsNow, 20);
+                    break;
                 default:
                     tsNow = new Timestamp(Instant.now().toEpochMilli());
                     tsRange = subtractYears(tsNow, 5);
             }
         }
         return tsRange;
+    }
+    public long StringToLong(String szValue, long lgDefault) {
+        long lgReturn = 0;
+        if(null != szValue && szValue.length() >0) {
+            try {
+                lgReturn = Long.valueOf(szValue);
+            }catch(NumberFormatException NFExcep){
+                lgReturn = lgDefault;
+            }
+        }
+        return lgReturn;
     }
 }
 
