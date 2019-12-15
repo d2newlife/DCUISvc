@@ -39,6 +39,41 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/sectable/{szSector}")
+    ResponseEntity getSecData(@PathVariable String szSector, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        String[] arrayKeys = {"symbol","companyname","ttmDividendRate"};
+
+        if(null != szSector && szSector.length() >0) {
+            String szURL = buildURL(CConst.SECTOR_DATA, null, null, szSector); //Build URL
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if (null != responseJson) { //Loop Through the Response
+                JsonNode stockNode = responseJson.path("stocks");
+                if (!stockNode.isMissingNode()) {
+                    if (stockNode.isArray()) {
+                        for (JsonNode objNode : stockNode) {
+                            listResults.add(prepareArray(objNode, arrayKeys));
+                        }
+                    }
+                    entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
+            } else {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/{szSymbol}/divtable/range/{szRange}")
     ResponseEntity getDivData(@PathVariable String szSymbol, @PathVariable String szRange, @RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
@@ -50,7 +85,7 @@ public class CUIServices {
         String[] arrayKeys = {"exdate","amount","declareddate","recorddate","paymentdate"};
 
         if(null != szSymbol && szSymbol.length() >0 && null != szRange && szRange.length()>0) {
-            String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange); //Build URL
+            String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange, null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode stockNode = responseJson.path("dividends");
@@ -84,7 +119,7 @@ public class CUIServices {
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
         String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate","ccctype"};
 
-        String szURL = buildURL(CConst.CCC_DATA,null,null); //Build URL
+        String szURL = buildURL(CConst.CCC_DATA,null,null, null); //Build URL
         JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
         if(null != responseJson) { //Loop Through the Response
             JsonNode stockNode = responseJson.path("stocks");
@@ -117,7 +152,7 @@ public class CUIServices {
         if(null != szRange && szRange.length() >0 && null != szSymbol && szSymbol.length()>0) {
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             tsRange= genLib.changeTimeStamp(szRange);
-            String szURL = buildURL(CConst.STOCK_DIVSERIES,szSymbol,szRange); //Build URL
+            String szURL = buildURL(CConst.STOCK_DIVSERIES,szSymbol,szRange,null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if(null != responseJson) { //Loop Through the Response
                 returnJSON =responseJson;
@@ -144,7 +179,7 @@ public class CUIServices {
         if(null != szRange && szRange.length() >0 && null != szSymbol && szSymbol.length()>0) {
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             tsRange= genLib.changeTimeStamp(szRange);
-            String szURL = buildURL(CConst.STOCK_PRICESERIES,szSymbol,szRange); //Build URL
+            String szURL = buildURL(CConst.STOCK_PRICESERIES,szSymbol,szRange,null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if(null != responseJson) { //Loop Through the Response
                 returnJSON =responseJson;
@@ -172,7 +207,7 @@ public class CUIServices {
         return resultArray;
     }
 
-    private String buildURL(String szURL, String szSymbol, String szRange){
+    private String buildURL(String szURL, String szSymbol, String szRange, String szSector){
         String finalURL = null;
         finalURL = szURL.replace("<host>",appProperties.getDataHost()).replace("<port>",appProperties.getDataPort());
         if(null != szSymbol && szSymbol.length()>0){
@@ -180,6 +215,9 @@ public class CUIServices {
         }
         if(null != szRange && szRange.length()>0){
             finalURL = finalURL.replace("<range>",szRange);
+        }
+        if(null != szSector && szSector.length()>0){
+            finalURL = finalURL.replace("<sector>",szSector);
         }
         return  finalURL;
     }
