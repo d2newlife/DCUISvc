@@ -38,5 +38,7 @@ public class CConst {
 
     //Data APIs
     public static final String STOCK_PRICESERIES = "http://<host>:<port>/divclarity/v1/stock/<symbol>/priceseries/range/<range>";
-    public static final String CCC_DATA = "http://<host>:<port>/divclarity/v1/stock/cccdata";
+    public static final String STOCK_DIVSERIES = "http://<host>:<port>/divclarity/v1/stock/<symbol>/divseries/range/<range>";
+    public static final String CCC_DATA = "http://<host>:<port>/divclarity/v1/stock/ccc";
+    public static final String DIV_DATA = "http://<host>:<port>/divclarity/v1/stock/<symbol>/dividends/range/<range>";
 }

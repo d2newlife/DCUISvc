@@ -39,7 +39,100 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
-    @GetMapping("/divclarity/v1/uidata/{szSymbol}/priceseries/range/{szRange}") //Get List of Companies by Sector
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/divtable/range/{szRange}")
+    ResponseEntity getDivData(@PathVariable String szSymbol, @PathVariable String szRange, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        String[] arrayKeys = {"exdate","amount","declareddate","recorddate","paymentdate"};
+
+        if(null != szSymbol && szSymbol.length() >0 && null != szRange && szRange.length()>0) {
+            String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange); //Build URL
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if (null != responseJson) { //Loop Through the Response
+                JsonNode stockNode = responseJson.path("dividends");
+                if (!stockNode.isMissingNode()) {
+                    if (stockNode.isArray()) {
+                        for (JsonNode objNode : stockNode) {
+                            listResults.add(prepareArray(objNode, arrayKeys));
+                        }
+                    }
+                    entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
+            } else {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/cccdata")
+    ResponseEntity getCCCData(@RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate","ccctype"};
+
+        String szURL = buildURL(CConst.CCC_DATA,null,null); //Build URL
+        JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+        if(null != responseJson) { //Loop Through the Response
+            JsonNode stockNode = responseJson.path("stocks");
+            if (!stockNode.isMissingNode()) {
+                if (stockNode.isArray()) {
+                    for(JsonNode objNode : stockNode) {
+                        listResults.add(prepareArray(objNode,arrayKeys));
+                    }
+                }
+                entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+            }else{
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/divseries/range/{szRange}")
+    ResponseEntity getDivSeriesByRange(@PathVariable String szSymbol, @PathVariable String szRange, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+
+        if(null != szRange && szRange.length() >0 && null != szSymbol && szSymbol.length()>0) {
+            entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+            tsRange= genLib.changeTimeStamp(szRange);
+            String szURL = buildURL(CConst.STOCK_DIVSERIES,szSymbol,szRange); //Build URL
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if(null != responseJson) { //Loop Through the Response
+                returnJSON =responseJson;
+            }else
+            {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(returnJSON, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/priceseries/range/{szRange}")
     ResponseEntity getCompPricesByRange2(@PathVariable String szSymbol, @PathVariable String szRange, @RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
         CAudit auditInfo = new CAudit(szCorelID, "NONE");
@@ -65,12 +158,17 @@ public class CUIServices {
         return (new ResponseEntity<>(returnJSON, entityData.getHeaders(), entityData.getHttpStatus()));
     }
 
-    private Object[] prepareArray(Long longDate, Double doubleValue){ //Will have to convert JSON values to long and double
-        Object[] resultArray = new Object[2];
-        resultArray[0] = longDate;
-        BigDecimal dbValue = new BigDecimal(doubleValue).setScale(2, RoundingMode.HALF_UP);
-        resultArray[1] = dbValue;
-
+    private Object[] prepareArray(JsonNode objNode, String[] arrayKeys){
+        Object[] resultArray = null;
+        int index;
+        if(null != objNode) {
+            resultArray = new Object[arrayKeys.length];
+            for(index = 0; index < arrayKeys.length; index++){
+                resultArray[index] = objNode.path(arrayKeys[index]).asText();
+            }
+        }else{
+            resultArray = new Object[0];
+        }
         return resultArray;
     }
 
