@@ -82,7 +82,7 @@ public class CUIServices {
         Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
-        String[] arrayKeys = {"exdate","amount","declareddate","recorddate","paymentdate"};
+        String[] arrayKeys = {"exdate","amount","paymentdate","declareddate","recorddate"};
 
         if(null != szSymbol && szSymbol.length() >0 && null != szRange && szRange.length()>0) {
             String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange, null); //Build URL
