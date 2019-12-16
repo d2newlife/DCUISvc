@@ -47,7 +47,7 @@ public class CUIServices {
         Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
-        String[] arrayKeys = {"symbol","companyname","ttmDividendRate"};
+        String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate"};
 
         if(null != szSector && szSector.length() >0) {
             String szURL = buildURL(CConst.SECTOR_DATA, null, null, szSector); //Build URL
@@ -117,7 +117,7 @@ public class CUIServices {
         Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
-        String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate","ccctype"};
+        String[] arrayKeys = {"symbol","companyname","ccctype","ttmDividendRate"};
 
         String szURL = buildURL(CConst.CCC_DATA,null,null, null); //Build URL
         JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
