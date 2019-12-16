@@ -39,6 +39,43 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/balancesheet/{szType}")
+    ResponseEntity getBalanceSheetData(@PathVariable String szSymbol, @PathVariable String szType, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate"};
+
+        if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
+            String szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null); //Build URL
+            szURL = szURL.replace("<type>",szType);
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if (null != responseJson) { //Loop Through the Response
+                JsonNode balanceNode = responseJson.path("balancesheet");
+                if (!balanceNode.isMissingNode()) {
+                    if (balanceNode.isArray()) {
+                        /*
+                        for (JsonNode objNode : stockNode) {
+                            listResults.add(prepareArray(objNode, arrayKeys));
+                        }*/
+                    }
+                    entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
+            } else {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/sectable/{szSector}")
     ResponseEntity getSecData(@PathVariable String szSector, @RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
