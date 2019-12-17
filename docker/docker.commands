@@ -1,0 +1,4 @@
+Build: docker build -f docker/Dockerfile -t dc/dcuisvc .
+Run: docker run --name dcuisvc -d -p 9444:9444 dc/dcuisvc
+Login: docker exec -it dcuisvc sh
+Remove Old Containers: docker container prune

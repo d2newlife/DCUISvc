@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.duanegrey</groupId>
-    <artifactId>DCUISvc</artifactId>
+    <artifactId>dcuisvc</artifactId>
     <version>1.0</version>
-    <name>DCUISvc</name>
+    <name>dcuisvc</name>
     <description>UI Data Service</description>
 
     <properties>
