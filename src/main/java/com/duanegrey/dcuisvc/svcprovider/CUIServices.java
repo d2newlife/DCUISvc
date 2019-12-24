@@ -3,6 +3,7 @@ package com.duanegrey.dcuisvc.svcprovider;
 import com.duanegrey.dcuisvc.config.CAppProperties;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
 import com.duanegrey.dcuisvc.model.BalanceRowTemplate;
+import com.duanegrey.dcuisvc.model.CRowDesc;
 import com.duanegrey.dcuisvc.model.utility.CAudit;
 import com.duanegrey.dcuisvc.model.utility.CEntityData;
 import com.duanegrey.dcuisvc.util.CConst;
@@ -239,8 +240,38 @@ public class CUIServices {
 
     private ArrayList<Object[]> buildRowTable(IRowTemplate rowTemplate, String[] arrayKeys, Map<String, JsonNode> mapData) {
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
-        //First Row is Just Keys
-        //Loop Through List Building Arays
+        Object[] objStart= new Object[arrayKeys.length+1]; //First Row is Just Keys
+        objStart[0]="Information";
+        for(int index =0; index < arrayKeys.length; index++){
+            objStart[index+1] = arrayKeys[index];
+        }
+        listResults.add(objStart);
+        //Loop Through List Building Arrays
+        List<CRowDesc> listRowDesc = rowTemplate.getRowList();
+        for(CRowDesc rowDescTemp : listRowDesc){
+            Object[] objTemp = new Object[arrayKeys.length+1];//Create temp Object Array
+            if(null != rowDescTemp && rowDescTemp.getRowClassification() == CConst.ROWGROUP){
+                objTemp[0] = rowDescTemp.getRowHeader();
+                listResults.add(objTemp);
+                for(int gindex=0; gindex < arrayKeys.length; gindex++){
+                    objTemp[gindex+1] = ""; //If Row Group Set Blanks
+                }
+            }else if(null != rowDescTemp && rowDescTemp.getRowClassification() == CConst.ROWDATA){
+                objTemp[0] = rowDescTemp.getRowHeader();
+                for(int dindex=0; dindex < arrayKeys.length; dindex++) {
+                    JsonNode objNode = mapData.get(arrayKeys[dindex]);
+                    if(null != objNode) { //Get JsonNode
+                        String szValue =  objNode.path(rowDescTemp.getJsonDataKey()).asText();//Get JSON Data
+                        //If null or blank convert
+                        //if not null and divideby set save as double
+                        //if not null and divideby noset save as text
+                    }else{
+                        objTemp[dindex+1] = "-";//Convert open array Space
+                    }
+                }
+                listResults.add(objTemp);
+            }
+        }
         return listResults;
     }
 

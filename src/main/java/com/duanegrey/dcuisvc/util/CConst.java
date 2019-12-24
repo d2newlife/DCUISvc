@@ -35,6 +35,8 @@ public class CConst {
     //General
     public static final String CORELID="X-Request-Correlation-ID";
     public static final String AUTHHEADER="Authorization";
+    public static final String ROWGROUP="ROWGROUP";
+    public static final String ROWDATA="ROWDATA";
 
     //Data APIs
     public static final String STOCK_PRICESERIES = "http://<host>:<port>/divclarity/v1/stock/<symbol>/priceseries/range/<range>";

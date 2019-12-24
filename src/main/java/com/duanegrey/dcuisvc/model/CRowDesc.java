@@ -12,4 +12,20 @@ public class CRowDesc {
         this.jsonDataKey = jsonDataKey;
         this.divideBy = divideBy;
     }
+
+    public String getRowHeader() {
+        return rowHeader;
+    }
+
+    public String getRowClassification() {
+        return rowClassification;
+    }
+
+    public String getJsonDataKey() {
+        return jsonDataKey;
+    }
+
+    public Double getDivideBy() {
+        return divideBy;
+    }
 }
