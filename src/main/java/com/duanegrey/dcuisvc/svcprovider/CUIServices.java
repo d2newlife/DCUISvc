@@ -1,6 +1,8 @@
 package com.duanegrey.dcuisvc.svcprovider;
 
 import com.duanegrey.dcuisvc.config.CAppProperties;
+import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
+import com.duanegrey.dcuisvc.model.BalanceRowTemplate;
 import com.duanegrey.dcuisvc.model.utility.CAudit;
 import com.duanegrey.dcuisvc.model.utility.CEntityData;
 import com.duanegrey.dcuisvc.util.CConst;
@@ -45,7 +47,7 @@ public class CUIServices {
         Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
-        List<Map<String, JsonNode>> mapResults = null;
+        BalanceRowTemplate browTemplate = new BalanceRowTemplate();
         String[] arrayKeys = null;
 
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
@@ -65,13 +67,7 @@ public class CUIServices {
                             mapTemp.put(szReportDate,jsonData);
                             index++;
                         }
-                        System.out.println("CHECK VARS");
-                        //Off Load To a Specific Helper Class To Build, Need to know all the column / object keys oer array row
-                        //Get Object by Date, Key then get Value from Object.column key
-                        /*
-                        for (JsonNode objNode : stockNode) {
-                            listResults.add(prepareArray(objNode, arrayKeys));
-                        }*/
+                        listResults = buildRowTable(browTemplate,arrayKeys,mapTemp);
                     }
                     entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
                 } else {
@@ -239,6 +235,13 @@ public class CUIServices {
             entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
         }
         return (new ResponseEntity<>(returnJSON, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    private ArrayList<Object[]> buildRowTable(IRowTemplate rowTemplate, String[] arrayKeys, Map<String, JsonNode> mapData) {
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        //First Row is Just Keys
+        //Loop Through List Building Arays
+        return listResults;
     }
 
     private Object[] prepareArray(JsonNode objNode, String[] arrayKeys){
