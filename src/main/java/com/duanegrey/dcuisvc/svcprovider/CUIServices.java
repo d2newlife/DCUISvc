@@ -19,9 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 public class CUIServices {
@@ -47,7 +45,8 @@ public class CUIServices {
         Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
-        String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate"};
+        List<Map<String, JsonNode>> mapResults = null;
+        String[] arrayKeys = null;
 
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
             String szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null); //Build URL
@@ -56,7 +55,19 @@ public class CUIServices {
             if (null != responseJson) { //Loop Through the Response
                 JsonNode balanceNode = responseJson.path("balancesheet");
                 if (!balanceNode.isMissingNode()) {
+                    int index = 0;
                     if (balanceNode.isArray()) {
+                        arrayKeys = new String[balanceNode.size()];
+                        Map<String, JsonNode> mapTemp = new HashMap<>();
+                        for(JsonNode jsonData : balanceNode){ //Save Key Order, and Pus into a Map
+                            String szReportDate = jsonData.path("reportdate").asText();
+                            arrayKeys[index]=szReportDate;
+                            mapTemp.put(szReportDate,jsonData);
+                            index++;
+                        }
+                        System.out.println("CHECK VARS");
+                        //Off Load To a Specific Helper Class To Build, Need to know all the column / object keys oer array row
+                        //Get Object by Date, Key then get Value from Object.column key
                         /*
                         for (JsonNode objNode : stockNode) {
                             listResults.add(prepareArray(objNode, arrayKeys));
