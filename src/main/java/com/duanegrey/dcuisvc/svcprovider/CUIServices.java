@@ -4,6 +4,8 @@ import com.duanegrey.dcuisvc.config.CAppProperties;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
 import com.duanegrey.dcuisvc.model.BalanceRowTemplate;
 import com.duanegrey.dcuisvc.model.CRowDesc;
+import com.duanegrey.dcuisvc.model.CashRowTemplate;
+import com.duanegrey.dcuisvc.model.IncomeRowTemplate;
 import com.duanegrey.dcuisvc.model.utility.CAudit;
 import com.duanegrey.dcuisvc.model.utility.CEntityData;
 import com.duanegrey.dcuisvc.util.CConst;
@@ -38,6 +40,95 @@ public class CUIServices {
         this.appProperties = appProperties;
         entityBuilder = new CEntityBuilder();
         genLib = new CGenLib();
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/cashflow/{szType}")
+    ResponseEntity getCashFlowData(@PathVariable String szSymbol, @PathVariable String szType, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        CashRowTemplate crowTemplate = new CashRowTemplate();
+        String[] arrayKeys = null;
+
+        if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
+            String szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null); //Build URL
+            szURL = szURL.replace("<type>",szType);
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if (null != responseJson) { //Loop Through the Response
+                JsonNode cashFlowNode = responseJson.path("cashflow");
+                if (!cashFlowNode.isMissingNode()) {
+                    int index = 0;
+                    if (cashFlowNode.isArray()) {
+                        arrayKeys = new String[cashFlowNode.size()];
+                        Map<String, JsonNode> mapTemp = new HashMap<>();
+                        for(JsonNode jsonData : cashFlowNode){ //Save Key Order, and Pus into a Map
+                            String szReportDate = jsonData.path("reportdate").asText();
+                            arrayKeys[index]=szReportDate;
+                            mapTemp.put(szReportDate,jsonData);
+                            index++;
+                        }
+                        listResults = buildRowTable(crowTemplate,arrayKeys,mapTemp);
+                        //ADD A Calculated ROW FreeCashFlow = Operating Cash Flow (cashflow) - Capital Expenditure (capitalexpenditures)
+                    }
+                    entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
+            } else {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/income/{szType}")
+    ResponseEntity getIncomeData(@PathVariable String szSymbol, @PathVariable String szType, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        IncomeRowTemplate irowTemplate = new IncomeRowTemplate();
+        String[] arrayKeys = null;
+
+        if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
+            String szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null); //Build URL
+            szURL = szURL.replace("<type>",szType);
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if (null != responseJson) { //Loop Through the Response
+                JsonNode incomeNode = responseJson.path("income");
+                if (!incomeNode.isMissingNode()) {
+                    int index = 0;
+                    if (incomeNode.isArray()) {
+                        arrayKeys = new String[incomeNode.size()];
+                        Map<String, JsonNode> mapTemp = new HashMap<>();
+                        for(JsonNode jsonData : incomeNode){ //Save Key Order, and Pus into a Map
+                            String szReportDate = jsonData.path("reportdate").asText();
+                            arrayKeys[index]=szReportDate;
+                            mapTemp.put(szReportDate,jsonData);
+                            index++;
+                        }
+                        listResults = buildRowTable(irowTemplate,arrayKeys,mapTemp);
+                    }
+                    entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
+            } else {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
     }
 
     @CrossOrigin(origins = "*")
