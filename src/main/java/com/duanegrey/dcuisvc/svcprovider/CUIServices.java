@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.util.*;
 
 @RestController
@@ -262,9 +263,13 @@ public class CUIServices {
                     JsonNode objNode = mapData.get(arrayKeys[dindex]);
                     if(null != objNode) { //Get JsonNode
                         String szValue =  objNode.path(rowDescTemp.getJsonDataKey()).asText();//Get JSON Data
-                        //If null or blank convert
-                        //if not null and divideby set save as double
-                        //if not null and divideby noset save as text
+                        if(null == szValue || szValue.length()<1){ //If null or blank convert
+                            objTemp[dindex+1] = "-";
+                        }else if(szValue != null && rowDescTemp.getDivideBy() >  Double.valueOf(0).doubleValue()) {//if not null and divideby set save as double
+                            objTemp[dindex+1] = evaluteDouble(szValue,rowDescTemp.getDivideBy());
+                        }else if(szValue != null && rowDescTemp.getDivideBy() < Double.valueOf(1).doubleValue()){ //if not null and divideby noset save as text
+                            objTemp[dindex+1] = szValue;
+                        }
                     }else{
                         objTemp[dindex+1] = "-";//Convert open array Space
                     }
@@ -273,6 +278,18 @@ public class CUIServices {
             }
         }
         return listResults;
+    }
+
+    public String evaluteDouble(String szValue, double divideBy){
+        String returnValue = null;
+        try{
+            double dbReturn = Double.valueOf(szValue).doubleValue();
+            double dbResult = dbReturn / divideBy;
+            returnValue = String.format("%,.0f",dbResult);
+        }catch(Exception Excep){
+            returnValue = "-";
+        }
+        return returnValue;
     }
 
     private Object[] prepareArray(JsonNode objNode, String[] arrayKeys){

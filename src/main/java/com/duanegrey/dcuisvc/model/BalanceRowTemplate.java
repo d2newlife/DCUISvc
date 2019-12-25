@@ -8,7 +8,7 @@ import java.util.List;
 
 public class BalanceRowTemplate implements IRowTemplate {
 
-    List<CRowDesc> listRowDesc = null;
+    private List<CRowDesc> listRowDesc = null;
 
     public BalanceRowTemplate() {
         listRowDesc = new ArrayList<>();
@@ -19,6 +19,7 @@ public class BalanceRowTemplate implements IRowTemplate {
         listRowDesc.add(new CRowDesc("Net Receivables", CConst.ROWDATA,"receivables",1000.00));
     }
 
+    @Override
     public List<CRowDesc> getRowList(){
         return listRowDesc;
     };

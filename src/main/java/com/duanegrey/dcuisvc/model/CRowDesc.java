@@ -4,7 +4,7 @@ public class CRowDesc {
     private String rowHeader;
     private String rowClassification;
     private String jsonDataKey;
-    private Double divideBy;
+    private double divideBy;
 
     public CRowDesc(String rowHeader, String rowClassification, String jsonDataKey, Double divideBy) {
         this.rowHeader = rowHeader;
@@ -25,7 +25,7 @@ public class CRowDesc {
         return jsonDataKey;
     }
 
-    public Double getDivideBy() {
+    public double getDivideBy() {
         return divideBy;
     }
 }
