@@ -43,6 +43,43 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/paymonth/{szMonth}")
+    ResponseEntity getPayMonth(@PathVariable String szMonth, @RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        Timestamp tsRange = null;
+        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        String[] arrayKeys = {"symbol","companyname","month","ttmDividendRate"};
+
+        if(null != szMonth && szMonth.length() >0) {
+            String monthNumber = genLib.convertMonth(szMonth);
+            String szURL = buildURL(CConst.PAYMONTH_DATA, null, null, null); //Build URL
+            szURL = szURL.replace("<type>",monthNumber);
+            JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+            if (null != responseJson) { //Loop Through the Response
+                JsonNode stockNode = responseJson.path("stocks");
+                if (!stockNode.isMissingNode()) {
+                    if (stockNode.isArray()) {
+                        for (JsonNode objNode : stockNode) {
+                            listResults.add(prepareArray(objNode, arrayKeys,szMonth));
+                        }
+                    }
+                    entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
+            } else {
+                entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(listResults, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/{szSymbol}/cashflow/{szType}")
     ResponseEntity getCashFlowData(@PathVariable String szSymbol, @PathVariable String szType, @RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
@@ -390,6 +427,29 @@ public class CUIServices {
             resultArray = new Object[arrayKeys.length];
             for(index = 0; index < arrayKeys.length; index++){
                 resultArray[index] = objNode.path(arrayKeys[index]).asText();
+            }
+        }else{
+            resultArray = new Object[0];
+        }
+        return resultArray;
+    }
+
+    private Object[] prepareArray(JsonNode objNode, String[] arrayKeys, String szMonth){
+        String jsonValue = "";
+        Object[] resultArray = null;
+        int index;
+        if(null != objNode) {
+            resultArray = new Object[arrayKeys.length];
+            for(index = 0; index < arrayKeys.length; index++){
+                if("month" == arrayKeys[index]){
+                    resultArray[index] = szMonth;
+                }else{
+                    jsonValue = objNode.path(arrayKeys[index]).asText();
+                    if(null == jsonValue || jsonValue.length() < 1 || jsonValue.equalsIgnoreCase("null")){
+                        jsonValue = "-";
+                    }
+                    resultArray[index] = jsonValue;
+                }
             }
         }else{
             resultArray = new Object[0];

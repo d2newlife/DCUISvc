@@ -422,6 +422,53 @@ public class CGenLib {
         }
         return lgReturn;
     }
+
+    public String convertMonth(String szMonth) {
+        String szReturn = "";
+        if (null != szMonth) {
+            switch (szMonth) {
+                case "January":
+                    szReturn = "1";
+                    break;
+                case "February":
+                    szReturn = "2";
+                    break;
+                case "March":
+                    szReturn = "3";
+                    break;
+                case "April":
+                    szReturn = "4";
+                    break;
+                case "May":
+                    szReturn = "5";
+                    break;
+                case "June":
+                    szReturn = "6";
+                    break;
+                case "July":
+                    szReturn = "7";
+                    break;
+                case "August":
+                    szReturn = "8";
+                    break;
+                case "September":
+                    szReturn = "9";
+                    break;
+                case "October":
+                    szReturn = "10";
+                    break;
+                case "November":
+                    szReturn = "11";
+                    break;
+                case "December":
+                    szReturn = "12";
+                    break;
+                default:
+                    szReturn = "1";
+            }
+        }
+        return szReturn;
+    }
 }
 
 

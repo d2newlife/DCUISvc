@@ -47,4 +47,5 @@ public class CConst {
     public static final String BALANCESHEET_DATA = "http://<host>:<port>/divclarity/v1/stock/<symbol>/balancesheet/<type>";
     public static final String INCOME_DATA = "http://<host>:<port>/divclarity/v1/stock/<symbol>/income/<type>";
     public static final String CASHFLOW_DATA = "http://<host>:<port>/divclarity/v1/stock/<symbol>/cashflow/<type>";
+    public static final String PAYMONTH_DATA ="http://<host>:<port>/divclarity/v1/stock/paymonth/<type>";
 }
