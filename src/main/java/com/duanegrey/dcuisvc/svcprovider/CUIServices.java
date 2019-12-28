@@ -348,7 +348,7 @@ public class CUIServices {
         CEntityData entityData;
         Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
-        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();
 
         if(null != szRange && szRange.length() >0 && null != szSymbol && szSymbol.length()>0) {
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
@@ -403,9 +403,50 @@ public class CUIServices {
                     }
                 }
                 listResults.add(objTemp);
+            }else if(null != rowDescTemp && rowDescTemp.getRowClassification() == CConst.ROWCALC){
+                objTemp[0] = rowDescTemp.getRowHeader();
+                String szCalcReturn = "-";
+                for(int dindex=0; dindex < arrayKeys.length; dindex++) {
+                    JsonNode objNode = mapData.get(arrayKeys[dindex]);
+                    if(null != objNode) { //Get JsonNode
+                        if (null != rowDescTemp.getCalcName()) {
+                            switch (rowDescTemp.getCalcName()) {
+                                case CConst.FCF:
+                                    szCalcReturn = calcFreeCashFlow(objNode, rowDescTemp.getDivideBy());
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        objTemp[dindex+1] = szCalcReturn;
+                    }
+                    else{
+                        objTemp[dindex+1] = "-";//Convert open array Space
+                    }
+                }
+                listResults.add(objTemp);
             }
         }
         return listResults;
+    }
+
+    public String calcFreeCashFlow(JsonNode jsonNode,double divideBy){
+        String szReturn="-";
+        String szCashFlow =  jsonNode.path("cashflow").asText();//Get JSON Data
+        String szCapExpend =  jsonNode.path("capitalexpenditures").asText();//Get JSON Data
+        if(null != szCashFlow && szCashFlow.length()>0 && null != szCapExpend && szCapExpend.length()>0){
+            try {
+                //Convert to Doubles
+                double dbCashFlow = Double.valueOf(szCashFlow).doubleValue();
+                double dbCapExpend = Double.valueOf(szCapExpend).doubleValue();
+                double dbTotal = dbCashFlow + dbCapExpend; //Add Together
+                if(divideBy >  Double.valueOf(0).doubleValue()){ //Divide if DivideBy Set
+                    dbTotal = dbTotal / divideBy;
+                }
+                szReturn = String.format("%,.0f",dbTotal);
+            }catch(Exception Excep){}
+        }
+        return szReturn;
     }
 
     public String evaluteDouble(String szValue, double divideBy){
@@ -441,7 +482,7 @@ public class CUIServices {
         if(null != objNode) {
             resultArray = new Object[arrayKeys.length];
             for(index = 0; index < arrayKeys.length; index++){
-                if("month" == arrayKeys[index]){
+                if(arrayKeys[index].equals("month")){
                     resultArray[index] = szMonth;
                 }else{
                     jsonValue = objNode.path(arrayKeys[index]).asText();

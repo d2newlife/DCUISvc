@@ -15,6 +15,7 @@ public class CashRowTemplate implements IRowTemplate {
         listRowDesc.add(new CRowDesc("Depreciation and Amortization", CConst.ROWDATA,"depreciation",1000.00));
         listRowDesc.add(new CRowDesc("Changes In Inventories", CConst.ROWDATA,"changesininventories",1000.00));
         listRowDesc.add(new CRowDesc("Operating Cash Flow", CConst.ROWDATA,"cashflow",1000.00));
+        listRowDesc.add(new CRowDesc("Free Cash Flow", CConst.ROWCALC,"",1000.00,CConst.FCF));
         listRowDesc.add(new CRowDesc("Total Capital Expenditures", CConst.ROWDATA,"capitalexpenditures",1000.00));
         listRowDesc.add(new CRowDesc("Purchase / Sale Investments", CConst.ROWDATA,"investments",1000.00));
         listRowDesc.add(new CRowDesc("Other Investing Activities", CConst.ROWDATA,"investingactivityother",1000.00));

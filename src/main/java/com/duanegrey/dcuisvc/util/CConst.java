@@ -37,6 +37,10 @@ public class CConst {
     public static final String AUTHHEADER="Authorization";
     public static final String ROWGROUP="ROWGROUP";
     public static final String ROWDATA="ROWDATA";
+    public static final String ROWCALC="ROWCALC";
+
+    //Calculate
+    public static final String FCF="FCF";
 
     //Data APIs
     public static final String STOCK_PRICESERIES = "http://<host>:<port>/divclarity/v1/stock/<symbol>/priceseries/range/<range>";
