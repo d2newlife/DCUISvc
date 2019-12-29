@@ -469,6 +469,13 @@ public class CGenLib {
         }
         return szReturn;
     }
+    public String removeBadChars(String szValue){
+        String szReturn = "";
+        if(null != szValue){
+            szReturn = szValue.replaceAll("[^a-zA-Z0-9]%","");
+        }
+        return szReturn;
+    }
 }
 
 

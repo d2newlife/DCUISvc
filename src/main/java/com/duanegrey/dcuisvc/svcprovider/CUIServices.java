@@ -54,6 +54,7 @@ public class CUIServices {
         String[] arrayKeys = {"symbol","companyname","month","ttmDividendRate"};
 
         if(null != szMonth && szMonth.length() >0) {
+            szMonth = genLib.removeBadChars(szMonth);
             String monthNumber = genLib.convertMonth(szMonth);
             String szURL = buildURL(CConst.PAYMONTH_DATA, null, null, null); //Build URL
             szURL = szURL.replace("<type>",monthNumber);
@@ -92,6 +93,8 @@ public class CUIServices {
         String[] arrayKeys = null;
 
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szType = genLib.removeBadChars(szType);
             String szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null); //Build URL
             szURL = szURL.replace("<type>",szType);
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
@@ -137,6 +140,8 @@ public class CUIServices {
         String[] arrayKeys = null;
 
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szType = genLib.removeBadChars(szType);
             String szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null); //Build URL
             szURL = szURL.replace("<type>",szType);
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
@@ -181,6 +186,8 @@ public class CUIServices {
         String[] arrayKeys = null;
 
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szType = genLib.removeBadChars(szType);
             String szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null); //Build URL
             szURL = szURL.replace("<type>",szType);
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
@@ -224,6 +231,7 @@ public class CUIServices {
         String[] arrayKeys = {"symbol","companyname","sector","ttmDividendRate"};
 
         if(null != szSector && szSector.length() >0) {
+            szSector = genLib.removeBadChars(szSector);
             String szURL = buildURL(CConst.SECTOR_DATA, null, null, szSector); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
@@ -259,6 +267,8 @@ public class CUIServices {
         String[] arrayKeys = {"exdate","amount","paymentdate","declareddate","recorddate"};
 
         if(null != szSymbol && szSymbol.length() >0 && null != szRange && szRange.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szRange = genLib.removeBadChars(szRange);
             String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange, null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
@@ -324,6 +334,8 @@ public class CUIServices {
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
 
         if(null != szRange && szRange.length() >0 && null != szSymbol && szSymbol.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szRange = genLib.removeBadChars(szRange);
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             tsRange= genLib.changeTimeStamp(szRange);
             String szURL = buildURL(CConst.STOCK_DIVSERIES,szSymbol,szRange,null); //Build URL
@@ -351,6 +363,8 @@ public class CUIServices {
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();
 
         if(null != szRange && szRange.length() >0 && null != szSymbol && szSymbol.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szRange = genLib.removeBadChars(szRange);
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             tsRange= genLib.changeTimeStamp(szRange);
             String szURL = buildURL(CConst.STOCK_PRICESERIES,szSymbol,szRange,null); //Build URL
