@@ -1,6 +1,7 @@
-package com.duanegrey.dcuisvc.model;
+package com.duanegrey.dcuisvc.templates;
 
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
+import com.duanegrey.dcuisvc.model.CRowDesc;
 import com.duanegrey.dcuisvc.util.CConst;
 
 import java.util.ArrayList;

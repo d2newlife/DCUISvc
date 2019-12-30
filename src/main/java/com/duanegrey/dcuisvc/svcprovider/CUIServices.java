@@ -2,10 +2,10 @@ package com.duanegrey.dcuisvc.svcprovider;
 
 import com.duanegrey.dcuisvc.config.CAppProperties;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
-import com.duanegrey.dcuisvc.model.BalanceRowTemplate;
+import com.duanegrey.dcuisvc.templates.BalanceRowTemplate;
 import com.duanegrey.dcuisvc.model.CRowDesc;
-import com.duanegrey.dcuisvc.model.CashRowTemplate;
-import com.duanegrey.dcuisvc.model.IncomeRowTemplate;
+import com.duanegrey.dcuisvc.templates.CashRowTemplate;
+import com.duanegrey.dcuisvc.templates.IncomeRowTemplate;
 import com.duanegrey.dcuisvc.model.utility.CAudit;
 import com.duanegrey.dcuisvc.model.utility.CEntityData;
 import com.duanegrey.dcuisvc.util.CConst;
@@ -21,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.text.NumberFormat;
 import java.util.*;
 
 @RestController
