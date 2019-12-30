@@ -38,9 +38,16 @@ public class CConst {
     public static final String ROWGROUP="ROWGROUP";
     public static final String ROWDATA="ROWDATA";
     public static final String ROWCALC="ROWCALC";
+    public static final String SORTASC="?sort=asc";
+    public static final String SORTDESC="?sort=desc";
 
     //Calculate
     public static final String FCF="FCF";
+
+    //FinTypes
+    public static final String CFLOW="CFLOW";
+    public static final String BSHEET="BSHEET";
+    public static final String ISTAT="ISTAT";
 
     //Data APIs
     public static final String STOCK_PRICESERIES = "http://<host>:<port>/divclarity/v1/stock/<symbol>/priceseries/range/<range>";

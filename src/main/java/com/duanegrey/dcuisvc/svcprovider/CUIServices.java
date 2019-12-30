@@ -57,8 +57,7 @@ public class CUIServices {
         if(null != szMonth && szMonth.length() >0) {
             szMonth = genLib.removeBadChars(szMonth);
             String monthNumber = genLib.convertMonth(szMonth);
-            String szURL = buildURL(CConst.PAYMONTH_DATA, null, null, null); //Build URL
-            szURL = szURL.replace("<type>",monthNumber);
+            String szURL = buildURL(CConst.PAYMONTH_DATA, null, null, null, monthNumber); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode stockNode = responseJson.path("stocks");
@@ -96,8 +95,7 @@ public class CUIServices {
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
             szSymbol = genLib.removeBadChars(szSymbol);
             szType = genLib.removeBadChars(szType);
-            String szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null); //Build URL
-            szURL = szURL.replace("<type>",szType);
+            String szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null, szType); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode cashFlowNode = responseJson.path("cashflow");
@@ -143,8 +141,7 @@ public class CUIServices {
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
             szSymbol = genLib.removeBadChars(szSymbol);
             szType = genLib.removeBadChars(szType);
-            String szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null); //Build URL
-            szURL = szURL.replace("<type>",szType);
+            String szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null,szType); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode incomeNode = responseJson.path("income");
@@ -189,8 +186,7 @@ public class CUIServices {
         if(null != szSymbol && szSymbol.length() >0 && null != szType && szType.length()>0) {
             szSymbol = genLib.removeBadChars(szSymbol);
             szType = genLib.removeBadChars(szType);
-            String szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null); //Build URL
-            szURL = szURL.replace("<type>",szType);
+            String szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null, szType); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode balanceNode = responseJson.path("balancesheet");
@@ -233,7 +229,7 @@ public class CUIServices {
 
         if(null != szSector && szSector.length() >0) {
             szSector = genLib.removeBadChars(szSector);
-            String szURL = buildURL(CConst.SECTOR_DATA, null, null, szSector); //Build URL
+            String szURL = buildURL(CConst.SECTOR_DATA, null, null, szSector, null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode stockNode = responseJson.path("stocks");
@@ -270,7 +266,7 @@ public class CUIServices {
         if(null != szSymbol && szSymbol.length() >0 && null != szRange && szRange.length()>0) {
             szSymbol = genLib.removeBadChars(szSymbol);
             szRange = genLib.removeBadChars(szRange);
-            String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange, null); //Build URL
+            String szURL = buildURL(CConst.DIV_DATA, szSymbol, szRange, null, null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
                 JsonNode stockNode = responseJson.path("dividends");
@@ -304,7 +300,7 @@ public class CUIServices {
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
         String[] arrayKeys = {"symbol","companyname","ccctype","ttmDividendRate"};
 
-        String szURL = buildURL(CConst.CCC_DATA,null,null, null); //Build URL
+        String szURL = buildURL(CConst.CCC_DATA,null,null, null, null); //Build URL
         JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
         if(null != responseJson) { //Loop Through the Response
             JsonNode stockNode = responseJson.path("stocks");
@@ -339,7 +335,7 @@ public class CUIServices {
             szRange = genLib.removeBadChars(szRange);
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             tsRange= genLib.changeTimeStamp(szRange);
-            String szURL = buildURL(CConst.STOCK_DIVSERIES,szSymbol,szRange,null); //Build URL
+            String szURL = buildURL(CConst.STOCK_DIVSERIES,szSymbol,szRange,null, null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if(null != responseJson) { //Loop Through the Response
                 returnJSON =responseJson;
@@ -368,7 +364,7 @@ public class CUIServices {
             szRange = genLib.removeBadChars(szRange);
             entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             tsRange= genLib.changeTimeStamp(szRange);
-            String szURL = buildURL(CConst.STOCK_PRICESERIES,szSymbol,szRange,null); //Build URL
+            String szURL = buildURL(CConst.STOCK_PRICESERIES,szSymbol,szRange,null, null); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if(null != responseJson) { //Loop Through the Response
                 returnJSON =responseJson;
@@ -386,24 +382,46 @@ public class CUIServices {
     @GetMapping("/divclarity/v1/uidata/{szSymbol}/fingraph/{szFinType}/{szType}/")
     ResponseEntity<CSeriesGraph> getFinGraph(@PathVariable String szSymbol, @PathVariable String szType, @PathVariable String szFinType, @RequestHeader HttpHeaders requestHeaders) {
         CSeriesGraph seriesGraph = null;
+        boolean bBadFinType = false;
+        String szURL = "";
         CEntityData entityData;
         if(null != szType && szType.length() >0 && null != szSymbol && szSymbol.length()>0 && null != szFinType && szFinType.length()>0) {
             szSymbol = genLib.removeBadChars(szSymbol);
             szType = genLib.removeBadChars(szType);
+            szType = validateType(szType);
             szFinType = genLib.removeBadChars(szFinType);
-            //Figure Out What URL To Call & Set URL / Path Type Variables
-            //Build URL
-            //Call URL
-            //Save Key Order, and Pus into a Map
-            //Call BuildFinGraph
-            entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+            switch (szFinType) { //Figure Out What URL To Call & Set URL / Path Type Variables
+                case CConst.CFLOW:
+                    szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null, szType); //Build URL
+                    szURL = szURL.concat(CConst.SORTASC);
+                    break;
+                case CConst.BSHEET:
+                    szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null, szType); //Build URL
+                    szURL = szURL.concat(CConst.SORTASC);
+                    break;
+                case CConst.ISTAT:
+                    szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null,szType); //Build URL
+                    szURL = szURL.concat(CConst.SORTASC);
+                    break;
+                default:
+                    bBadFinType = true;
+                    break;
+            }
+            if(bBadFinType){
+                entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+            }else {
+                //Call URL
+                //Save Key Order, and Pus into a Map
+                //Call BuildFinGraph
+                entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+            }
         }else{
             entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
         }
         return (new ResponseEntity<>(seriesGraph, entityData.getHeaders(), entityData.getHttpStatus()));
     }
 
-        private CSeriesGraph buildFinGraph(IGraphTemplate graphTemplate, String[] arrayKeys, Map<String, JsonNode> mapData){
+    private CSeriesGraph buildFinGraph(IGraphTemplate graphTemplate, String[] arrayKeys, Map<String, JsonNode> mapData){
         CSeriesGraph seriesGraph = null;
             //Get FinData In the order of the arrayKeys
         return seriesGraph;
@@ -552,7 +570,7 @@ public class CUIServices {
         return resultArray;
     }
 
-    private String buildURL(String szURL, String szSymbol, String szRange, String szSector){
+    private String buildURL(String szURL, String szSymbol, String szRange, String szSector, String szType){
         String finalURL = null;
         finalURL = szURL.replace("<host>",appProperties.getDataHost()).replace("<port>",appProperties.getDataPort());
         if(null != szSymbol && szSymbol.length()>0){
@@ -563,6 +581,9 @@ public class CUIServices {
         }
         if(null != szSector && szSector.length()>0){
             finalURL = finalURL.replace("<sector>",szSector);
+        }
+        if(null != szType && szType.length()>0){
+            finalURL = finalURL.replace("<type>",szType);
         }
         return  finalURL;
     }
@@ -580,5 +601,15 @@ public class CUIServices {
             System.out.println("ERORR processing request"); //TODO FiX This LAter
         }
         return jsonResponse;
+    }
+
+    private String validateType(String szType) {
+        String szReturn;
+        if (null != szType && szType.equalsIgnoreCase("QUARTERLY")) {
+            szReturn = "QUARTERLY";
+        } else {
+            szReturn = "ANNUAL";
+        }
+        return szReturn;
     }
 }
