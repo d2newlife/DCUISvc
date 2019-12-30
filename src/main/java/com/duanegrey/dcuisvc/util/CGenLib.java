@@ -500,6 +500,54 @@ public class CGenLib {
         } catch (ParseException ParseExcep){}
         return IntReturn;
     }
+
+    public Integer getMonth(String szValue, String szPattern){
+        Integer IntReturn = null;
+
+        SimpleDateFormat formatter;
+        if(null != szPattern)
+        {
+            formatter = new SimpleDateFormat(szPattern);
+        }
+        else
+        {
+            formatter = new SimpleDateFormat("MM/dd/yyyy");
+        }
+        try {
+            if(null != szValue) {
+                Timestamp tsTemp = new Timestamp ((formatter.parse(szValue)).getTime());
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(tsTemp.getTime());
+                IntReturn = cal.get(Calendar.MONTH);
+            }
+        } catch (ParseException ParseExcep){}
+        return IntReturn;
+    }
+
+    public Integer getDay(String szValue, String szPattern){
+        Integer IntReturn = null;
+
+        SimpleDateFormat formatter;
+        if(null != szPattern)
+        {
+            formatter = new SimpleDateFormat(szPattern);
+        }
+        else
+        {
+            formatter = new SimpleDateFormat("MM/dd/yyyy");
+        }
+        try {
+            if(null != szValue) {
+                Timestamp tsTemp = new Timestamp ((formatter.parse(szValue)).getTime());
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(tsTemp.getTime());
+                IntReturn = cal.get(Calendar.DAY_OF_MONTH);
+            }
+        } catch (ParseException ParseExcep){}
+        return IntReturn;
+    }
+
+
 }
 
 

@@ -7,36 +7,28 @@ import java.util.List;
 import java.util.Map;
 
 public class CSeriesGraph {
-    Object pointStart;
+    Object objStartMonth;
+    Object objStartDay;
+    Object objStartYear;
     List<CSeriesInfo> listSeriesInfo;
     String szTitle;
+    String[] XAxisCategories;
 
     public CSeriesGraph() {
-    }
-
-    public void setMulti(String szTitle, Object pointStart, List<CSeriesInfo> listSeriesInfo) {
-        this.pointStart = pointStart;
-        this.listSeriesInfo = listSeriesInfo;
-        this.szTitle = szTitle;
-    }
-
-    public String getTitle() {
-        return szTitle;
     }
 
     public void setTitle(String szTitle) {
         this.szTitle = szTitle;
     }
-    public Object getPointStart() {
-        return pointStart;
+
+    public void setPointStart(Object objStartMonth,Object objStartDay,Object objStartYear) {
+        this.objStartMonth = objStartMonth;
+        this.objStartDay = objStartDay;
+        this.objStartYear = objStartYear;
     }
 
-    public void setPointStart(Object pointStart) {
-        this.pointStart = pointStart;
-    }
-
-    public List<CSeriesInfo> getListSeriesInfo() {
-        return listSeriesInfo;
+    public void setXAxisCategories(String[] XAxisCategories) {
+        this.XAxisCategories = XAxisCategories;
     }
 
     public void setListSeriesInfo(List<CSeriesInfo> listSeriesInfo) {
@@ -54,14 +46,21 @@ public class CSeriesGraph {
             }
             mapResults.put("status", CConst.SUCCESS);
             mapResults.put("title", szTitle);
-            mapResults.put("pointstart", pointStart);
+            mapResults.put("startmonth", objStartMonth);
+            mapResults.put("startday", objStartDay);
+            mapResults.put("startyear", objStartYear);
             mapResults.put("dataset", seriesOutput);
+            mapResults.put("xcategory",XAxisCategories);
         }
         else{
             mapResults.put("status", CConst.INTERNALERR);
             mapResults.put("title", "");
+            mapResults.put("startmonth", 0);
+            mapResults.put("startday", 0);
+            mapResults.put("startyear", 0);
             mapResults.put("pointstart", 0);
             mapResults.put("dataset", new Object[0]);
+            mapResults.put("xcategory",new String[0]);
         }
         return mapResults;
     };

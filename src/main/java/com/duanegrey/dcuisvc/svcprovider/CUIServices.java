@@ -451,10 +451,11 @@ public class CUIServices {
 
     private CSeriesGraph buildFinGraph(IGraphTemplate graphTemplate, String[] arrayKeys, Map<String, JsonNode> mapData){
         CSeriesGraph seriesGraph = new CSeriesGraph();
-        Object pointStart = genLib.getYear(arrayKeys[0],"MM/dd/yyyy");
-        if(null != pointStart) {
+        String[] xAxisLegend = buildXAxisCateogires(arrayKeys);
+        if(null != xAxisLegend) {
             List<CSeriesInfo> listSeriesInfo = new ArrayList<>();
-            seriesGraph.setPointStart(pointStart);
+            seriesGraph.setXAxisCategories(xAxisLegend);
+            seriesGraph.setPointStart(genLib.getMonth(arrayKeys[0],"MM/dd/yyyy"),genLib.getDay(arrayKeys[0],"MM/dd/yyyy"),genLib.getYear(arrayKeys[0],"MM/dd/yyyy"));
             seriesGraph.setTitle(graphTemplate.getTitle());
             List<CGraphDesc> listGraphDesc = graphTemplate.getGraphList();
             for (CGraphDesc graphDesc : listGraphDesc) { //Fill with Type Series Info
@@ -464,8 +465,9 @@ public class CUIServices {
                         JsonNode objNode = mapData.get(arrayKeys[dindex]);
                         switch (graphDesc.getCalcName()) {
                             case CConst.FCF:
-                                String szCalcReturn = calcFreeCashFlow(objNode, graphDesc.getDivideBy());
-                                objTemp[dindex] = prepDouble(szCalcReturn,1,graphDesc.isbConvertIfNeg());
+                                Double dbReturn = calcFreeCashFlow(objNode, graphDesc.getDivideBy());
+                                if(null != dbReturn && graphDesc.isbConvertIfNeg()){dbReturn = dbReturn * -1;}
+                                objTemp[dindex] = dbReturn.intValue();
                                 break;
                             default:
                                 break;
@@ -490,6 +492,85 @@ public class CUIServices {
             seriesGraph.setListSeriesInfo(listSeriesInfo);
         }
         return seriesGraph;
+    }
+
+    private String[] buildXAxisCateogires(String[] arrayKeys){
+        String[] returnArray = null;
+        if(null != arrayKeys && arrayKeys.length>0) {
+            returnArray = new String[arrayKeys.length];
+            for (int index = 0; index < arrayKeys.length; index++) {
+                String szDate = arrayKeys[index];
+                String splitArray[] = szDate.split("/", 0);
+                if (splitArray.length == 3) {
+                    String szLegendItem;
+                    switch (splitArray[0]) { //Figure Out What URL To Call & Set URL / Path Type Variables
+                        case "01":
+                            szLegendItem = "Jan ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "02":
+                            szLegendItem = "Feb ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "03":
+                            szLegendItem = "Mar ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "04":
+                            szLegendItem = "Apr ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "05":
+                            szLegendItem = "May ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "06":
+                            szLegendItem = "Jun ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "07":
+                            szLegendItem = "Jul ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "08":
+                            szLegendItem = "Aug ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "09":
+                            szLegendItem = "Sep ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "10":
+                            szLegendItem = "Oct ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "11":
+                            szLegendItem = "Nov ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        case "12":
+                            szLegendItem = "Dec ";
+                            szLegendItem = szLegendItem.concat(splitArray[2].substring(splitArray[2].length()-2));
+                            returnArray[index] = szLegendItem;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+        return returnArray;
     }
 
     private ArrayList<Object[]> buildRowTable(IRowTemplate rowTemplate, String[] arrayKeys, Map<String, JsonNode> mapData) {
@@ -537,7 +618,12 @@ public class CUIServices {
                         if (null != rowDescTemp.getCalcName()) {
                             switch (rowDescTemp.getCalcName()) {
                                 case CConst.FCF:
-                                    szCalcReturn = calcFreeCashFlow(objNode, rowDescTemp.getDivideBy());
+                                    Double dbTotal = calcFreeCashFlow(objNode, rowDescTemp.getDivideBy());
+                                    if(null != dbTotal) {
+                                        szCalcReturn = String.format("%,.0f", dbTotal);
+                                    }else{
+                                        szCalcReturn="-";
+                                    }
                                     break;
                                 default:
                                     break;
@@ -555,8 +641,8 @@ public class CUIServices {
         return listResults;
     }
 
-    public String calcFreeCashFlow(JsonNode jsonNode,double divideBy){
-        String szReturn="-";
+    public Double calcFreeCashFlow(JsonNode jsonNode,double divideBy){
+        Double dbReturn=null;
         String szCashFlow =  jsonNode.path("cashflow").asText();//Get JSON Data
         String szCapExpend =  jsonNode.path("capitalexpenditures").asText();//Get JSON Data
         if(null != szCashFlow && szCashFlow.length()>0 && null != szCapExpend && szCapExpend.length()>0){
@@ -567,14 +653,14 @@ public class CUIServices {
                 double dbTotal = dbCashFlow + dbCapExpend; //Add Together
                 if(divideBy > (double) 0){ //Divide if DivideBy Set
                     dbTotal = dbTotal / divideBy;
+                    dbReturn = dbTotal;
                 }
-                szReturn = String.format("%,.0f",dbTotal);
             }catch(Exception Excep){}
         }
-        return szReturn;
+        return dbReturn;
     }
 
-    public Double prepDouble(String szValue, double divideBy, boolean convertNeg){
+    public Integer prepDouble(String szValue, double divideBy, boolean convertNeg){
         Double dbReturnValue = null;
         try{
             double dbResult = Double.parseDouble(szValue);
@@ -588,7 +674,7 @@ public class CUIServices {
         }catch(Exception Excep){
             //Return Null
         }
-        return dbReturnValue;
+        return dbReturnValue.intValue();
     }
 
     public String evaluteDouble(String szValue, double divideBy){
