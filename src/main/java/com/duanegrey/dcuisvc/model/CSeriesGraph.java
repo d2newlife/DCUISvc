@@ -26,4 +26,6 @@ public class CSeriesGraph {
     public void setListSeriesInfo(List<CSeriesInfo> listSeriesInfo) {
         this.listSeriesInfo = listSeriesInfo;
     }
+
+    //Ned to Build Array
 }

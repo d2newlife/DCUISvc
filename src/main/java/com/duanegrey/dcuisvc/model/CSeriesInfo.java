@@ -18,4 +18,8 @@ public class CSeriesInfo {
     public List<Object> getObjDataList() {
         return objDataList;
     }
+
+    public Object[] getObjDataListAsArray(){
+        return objDataList.toArray();
+    }
 }
