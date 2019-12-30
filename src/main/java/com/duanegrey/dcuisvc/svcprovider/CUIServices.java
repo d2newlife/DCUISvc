@@ -662,6 +662,7 @@ public class CUIServices {
 
     public Integer prepDouble(String szValue, double divideBy, boolean convertNeg){
         Double dbReturnValue = null;
+        Integer IntReturnValue  = null;
         try{
             double dbResult = Double.parseDouble(szValue);
             if(divideBy > (double)1){
@@ -671,10 +672,11 @@ public class CUIServices {
                 dbResult = dbResult * (double) -1;
             }
             dbReturnValue = BigDecimal.valueOf(dbResult).setScale(0, RoundingMode.HALF_UP).doubleValue();
+            IntReturnValue = dbReturnValue.intValue();
         }catch(Exception Excep){
             //Return Null
         }
-        return dbReturnValue.intValue();
+        return IntReturnValue;
     }
 
     public String evaluteDouble(String szValue, double divideBy){
