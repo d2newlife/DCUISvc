@@ -25,6 +25,8 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -253,13 +255,11 @@ public class CUIServices {
 
     @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/{szSymbol}/divtable/range/{szRange}")
-    ResponseEntity getDivData(@PathVariable String szSymbol, @PathVariable String szRange, @RequestHeader HttpHeaders requestHeaders) {
+    ResponseEntity<ArrayList<Object[]>> getDivData(@PathVariable String szSymbol, @PathVariable String szRange, @RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
         CAudit auditInfo = new CAudit(szCorelID, "NONE");
         CEntityData entityData;
-        Timestamp tsRange = null;
-        ArrayList<Object[]> listResults = new ArrayList<Object[]>();
-        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        ArrayList<Object[]> listResults = new ArrayList<>();
         String[] arrayKeys = {"exdate","amount","paymentdate","declareddate","recorddate"};
 
         if(null != szSymbol && szSymbol.length() >0 && null != szRange && szRange.length()>0) {
@@ -378,8 +378,8 @@ public class CUIServices {
 
     @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/{szSymbol}/fingraph/{szFinType}/{szType}/")
-    ResponseEntity<CSeriesGraph> getFinGraph(@PathVariable String szSymbol, @PathVariable String szType, @PathVariable String szFinType, @RequestHeader HttpHeaders requestHeaders) {
-        CSeriesGraph seriesGraph = null;
+    ResponseEntity<Map<String, Object>> getFinGraph(@PathVariable String szSymbol, @PathVariable String szType, @PathVariable String szFinType, @RequestHeader HttpHeaders requestHeaders) {
+        CSeriesGraph seriesGraph = new CSeriesGraph();
         boolean bBadFinType = false;
         String szURL = "";
         String szNodePath = "";
@@ -445,17 +445,46 @@ public class CUIServices {
         }else{
             entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
         }
-        return (new ResponseEntity<>(seriesGraph, entityData.getHeaders(), entityData.getHttpStatus()));
+        return (new ResponseEntity<>(seriesGraph.buildOutput(), entityData.getHeaders(), entityData.getHttpStatus()));
     }
 
     private CSeriesGraph buildFinGraph(IGraphTemplate graphTemplate, String[] arrayKeys, Map<String, JsonNode> mapData){
-        CSeriesGraph seriesGraph = null;
-        Object pointStart; //TODO NEXT ITEM IS TO PULL YEAR FROM DATE AS STARTING POINT FOR GRAPH
-        List<CGraphDesc> listGraphDesc = graphTemplate.getGraphList();
-        for(CGraphDesc graphDesc : listGraphDesc){
-            Object[] objTemp = new Object[arrayKeys.length];//Create temp Object Array
+        CSeriesGraph seriesGraph = new CSeriesGraph();
+        Object pointStart = genLib.getYear(arrayKeys[0],"MM/dd/yyyy");
+        if(null != pointStart) {
+            seriesGraph.setPointStart(pointStart);
+            seriesGraph.setTitle(graphTemplate.getTitle());
+            List<CGraphDesc> listGraphDesc = graphTemplate.getGraphList();
+            for (CGraphDesc graphDesc : listGraphDesc) {
+                Object[] objTemp = new Object[arrayKeys.length];//Create temp Object Array
+            }
         }
         return seriesGraph;
+    }
+
+    private Integer getYear(String szValue, String szPattern){
+        Integer IntReturn = null;
+
+        SimpleDateFormat formatter;
+        if(null != szPattern)
+        {
+            formatter = new SimpleDateFormat(szPattern);
+        }
+        else
+        {
+            formatter = new SimpleDateFormat("MM/dd/yyyy");
+        }
+        try {
+            if(null != szValue) {
+                Timestamp tsTemp = new Timestamp ((formatter.parse(szValue)).getTime());
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(tsTemp.getTime());
+                IntReturn = cal.get(Calendar.YEAR);
+            }
+        } catch (ParseException ParseExcep) {
+            System.out.println("Graph Start Point Cannot Be Determined: Critical Failure");
+        }
+        return IntReturn;
     }
 
     private ArrayList<Object[]> buildRowTable(IRowTemplate rowTemplate, String[] arrayKeys, Map<String, JsonNode> mapData) {

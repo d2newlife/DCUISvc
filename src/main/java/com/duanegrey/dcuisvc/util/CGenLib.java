@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Calendar;
@@ -475,6 +476,29 @@ public class CGenLib {
             szReturn = szValue.replaceAll("[^a-zA-Z0-9]%","");
         }
         return szReturn;
+    }
+
+    public Integer getYear(String szValue, String szPattern){
+        Integer IntReturn = null;
+
+        SimpleDateFormat formatter;
+        if(null != szPattern)
+        {
+            formatter = new SimpleDateFormat(szPattern);
+        }
+        else
+        {
+            formatter = new SimpleDateFormat("MM/dd/yyyy");
+        }
+        try {
+            if(null != szValue) {
+                Timestamp tsTemp = new Timestamp ((formatter.parse(szValue)).getTime());
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(tsTemp.getTime());
+                IntReturn = cal.get(Calendar.YEAR);
+            }
+        } catch (ParseException ParseExcep){}
+        return IntReturn;
     }
 }
 

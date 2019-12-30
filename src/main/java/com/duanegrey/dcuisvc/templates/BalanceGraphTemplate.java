@@ -8,11 +8,15 @@ import java.util.List;
 
 public class BalanceGraphTemplate implements IGraphTemplate {
     private List<CGraphDesc> listGraphDesc;
+    private String szTitle;
 
     public BalanceGraphTemplate() {
+        szTitle = "Balance Sheet Data";
         listGraphDesc = new ArrayList<>();
         listGraphDesc.add(new CGraphDesc("Long Term Debt","longtermdebt", 1000.00, false, null));
     }
+
+    public String getTitle(){return szTitle;};
 
     public List<CGraphDesc> getGraphList(){
         return listGraphDesc;
