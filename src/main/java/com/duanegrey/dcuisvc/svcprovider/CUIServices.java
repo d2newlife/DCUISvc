@@ -1,7 +1,9 @@
 package com.duanegrey.dcuisvc.svcprovider;
 
 import com.duanegrey.dcuisvc.config.CAppProperties;
+import com.duanegrey.dcuisvc.interfaces.IGraphTemplate;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
+import com.duanegrey.dcuisvc.model.CSeriesGraph;
 import com.duanegrey.dcuisvc.templates.BalanceRowTemplate;
 import com.duanegrey.dcuisvc.model.CRowDesc;
 import com.duanegrey.dcuisvc.templates.CashRowTemplate;
@@ -21,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -378,6 +382,33 @@ public class CUIServices {
         return (new ResponseEntity<>(returnJSON, entityData.getHeaders(), entityData.getHttpStatus()));
     }
 
+    @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/fingraph/{szFinType}/{szType}/")
+    ResponseEntity<CSeriesGraph> getFinGraph(@PathVariable String szSymbol, @PathVariable String szType, @PathVariable String szFinType, @RequestHeader HttpHeaders requestHeaders) {
+        CSeriesGraph seriesGraph = null;
+        CEntityData entityData;
+        if(null != szType && szType.length() >0 && null != szSymbol && szSymbol.length()>0 && null != szFinType && szFinType.length()>0) {
+            szSymbol = genLib.removeBadChars(szSymbol);
+            szType = genLib.removeBadChars(szType);
+            szFinType = genLib.removeBadChars(szFinType);
+            //Figure Out What URL To Call & Set URL / Path Type Variables
+            //Build URL
+            //Call URL
+            //Save Key Order, and Pus into a Map
+            //Call BuildFinGraph
+            entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
+        }
+        return (new ResponseEntity<>(seriesGraph, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+        private CSeriesGraph buildFinGraph(IGraphTemplate graphTemplate, String[] arrayKeys, Map<String, JsonNode> mapData){
+        CSeriesGraph seriesGraph = null;
+            //Get FinData In the order of the arrayKeys
+        return seriesGraph;
+    }
+
     private ArrayList<Object[]> buildRowTable(IRowTemplate rowTemplate, String[] arrayKeys, Map<String, JsonNode> mapData) {
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         Object[] objStart= new Object[arrayKeys.length+1]; //First Row is Just Keys
@@ -390,13 +421,13 @@ public class CUIServices {
         List<CRowDesc> listRowDesc = rowTemplate.getRowList();
         for(CRowDesc rowDescTemp : listRowDesc){
             Object[] objTemp = new Object[arrayKeys.length+1];//Create temp Object Array
-            if(null != rowDescTemp && rowDescTemp.getRowClassification() == CConst.ROWGROUP){
+            if(null != rowDescTemp && rowDescTemp.getRowClassification().equalsIgnoreCase(CConst.ROWGROUP)){
                 objTemp[0] = rowDescTemp.getRowHeader();
                 listResults.add(objTemp);
                 for(int gindex=0; gindex < arrayKeys.length; gindex++){
                     objTemp[gindex+1] = ""; //If Row Group Set Blanks
                 }
-            }else if(null != rowDescTemp && rowDescTemp.getRowClassification() == CConst.ROWDATA){
+            }else if(null != rowDescTemp && rowDescTemp.getRowClassification().equalsIgnoreCase(CConst.ROWDATA)){
                 objTemp[0] = rowDescTemp.getRowHeader();
                 for(int dindex=0; dindex < arrayKeys.length; dindex++) {
                     JsonNode objNode = mapData.get(arrayKeys[dindex]);
@@ -414,7 +445,7 @@ public class CUIServices {
                     }
                 }
                 listResults.add(objTemp);
-            }else if(null != rowDescTemp && rowDescTemp.getRowClassification() == CConst.ROWCALC){
+            }else if(null != rowDescTemp && rowDescTemp.getRowClassification().equalsIgnoreCase(CConst.ROWCALC)){
                 objTemp[0] = rowDescTemp.getRowHeader();
                 String szCalcReturn = "-";
                 for(int dindex=0; dindex < arrayKeys.length; dindex++) {
@@ -458,6 +489,18 @@ public class CUIServices {
             }catch(Exception Excep){}
         }
         return szReturn;
+    }
+
+    public Object prepDouble(String szValue, double divideBy){
+        Double dbReturnValue = null;
+        try{
+            double dbReturn = Double.valueOf(szValue).doubleValue();
+            double dbResult = dbReturn / divideBy;
+            dbReturnValue = BigDecimal.valueOf(dbResult).setScale(0, RoundingMode.HALF_UP).doubleValue();
+        }catch(Exception Excep){
+            //Return Null
+        }
+        return dbReturnValue;
     }
 
     public String evaluteDouble(String szValue, double divideBy){

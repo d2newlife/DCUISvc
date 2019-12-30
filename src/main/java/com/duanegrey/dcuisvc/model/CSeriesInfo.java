@@ -19,7 +19,7 @@ public class CSeriesInfo {
         return objDataList;
     }
 
-    public Object[] getObjDataListAsArray(){
-        return objDataList.toArray();
+    public CSeriesOutput getSeriesOutput(){
+        return new CSeriesOutput(szLabel, objDataList.toArray());
     }
 }
