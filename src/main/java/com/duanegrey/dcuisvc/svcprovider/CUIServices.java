@@ -5,6 +5,7 @@ import com.duanegrey.dcuisvc.interfaces.IGraphTemplate;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
 import com.duanegrey.dcuisvc.model.CGraphDesc;
 import com.duanegrey.dcuisvc.model.CSeriesGraph;
+import com.duanegrey.dcuisvc.model.CSeriesInfo;
 import com.duanegrey.dcuisvc.templates.*;
 import com.duanegrey.dcuisvc.model.CRowDesc;
 import com.duanegrey.dcuisvc.model.utility.CAudit;
@@ -377,7 +378,7 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
-    @GetMapping("/divclarity/v1/uidata/{szSymbol}/fingraph/{szFinType}/{szType}/")
+    @GetMapping("/divclarity/v1/uidata/{szSymbol}/fingraph/{szFinType}/{szType}")
     ResponseEntity<Map<String, Object>> getFinGraph(@PathVariable String szSymbol, @PathVariable String szType, @PathVariable String szFinType, @RequestHeader HttpHeaders requestHeaders) {
         CSeriesGraph seriesGraph = new CSeriesGraph();
         boolean bBadFinType = false;
@@ -452,39 +453,40 @@ public class CUIServices {
         CSeriesGraph seriesGraph = new CSeriesGraph();
         Object pointStart = genLib.getYear(arrayKeys[0],"MM/dd/yyyy");
         if(null != pointStart) {
+            List<CSeriesInfo> listSeriesInfo = new ArrayList<>();
             seriesGraph.setPointStart(pointStart);
             seriesGraph.setTitle(graphTemplate.getTitle());
             List<CGraphDesc> listGraphDesc = graphTemplate.getGraphList();
-            for (CGraphDesc graphDesc : listGraphDesc) {
+            for (CGraphDesc graphDesc : listGraphDesc) { //Fill with Type Series Info
                 Object[] objTemp = new Object[arrayKeys.length];//Create temp Object Array
+                if(null != graphDesc && null != graphDesc.getCalcName()){
+                    for(int dindex=0; dindex < arrayKeys.length; dindex++) {
+                        JsonNode objNode = mapData.get(arrayKeys[dindex]);
+                        switch (graphDesc.getCalcName()) {
+                            case CConst.FCF:
+                                String szCalcReturn = calcFreeCashFlow(objNode, graphDesc.getDivideBy());
+                                objTemp[dindex] = prepDouble(szCalcReturn,1,graphDesc.isbConvertIfNeg());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }else{
+                    for(int dindex=0; dindex < arrayKeys.length; dindex++) {
+                        JsonNode objNode = mapData.get(arrayKeys[dindex]);
+                        if(null != objNode) { //Get JsonNode
+                            String szValue =  objNode.path(graphDesc.getJsonDataKey()).asText();//Get JSON Data
+                            if(null == szValue || szValue.length()<1){ //If null or blank convert
+                                objTemp[dindex] = null;
+                            }else{//if not null and divideby set save as double
+                                objTemp[dindex] = prepDouble(szValue,graphDesc.getDivideBy(),graphDesc.isbConvertIfNeg());
+                            }
+                        }
+                    }
+                }
             }
         }
         return seriesGraph;
-    }
-
-    private Integer getYear(String szValue, String szPattern){
-        Integer IntReturn = null;
-
-        SimpleDateFormat formatter;
-        if(null != szPattern)
-        {
-            formatter = new SimpleDateFormat(szPattern);
-        }
-        else
-        {
-            formatter = new SimpleDateFormat("MM/dd/yyyy");
-        }
-        try {
-            if(null != szValue) {
-                Timestamp tsTemp = new Timestamp ((formatter.parse(szValue)).getTime());
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(tsTemp.getTime());
-                IntReturn = cal.get(Calendar.YEAR);
-            }
-        } catch (ParseException ParseExcep) {
-            System.out.println("Graph Start Point Cannot Be Determined: Critical Failure");
-        }
-        return IntReturn;
     }
 
     private ArrayList<Object[]> buildRowTable(IRowTemplate rowTemplate, String[] arrayKeys, Map<String, JsonNode> mapData) {
@@ -569,11 +571,16 @@ public class CUIServices {
         return szReturn;
     }
 
-    public Object prepDouble(String szValue, double divideBy){
+    public Double prepDouble(String szValue, double divideBy, boolean convertNeg){
         Double dbReturnValue = null;
         try{
-            double dbReturn = Double.parseDouble(szValue);
-            double dbResult = dbReturn / divideBy;
+            double dbResult = Double.parseDouble(szValue);
+            if(divideBy > (double)1){
+                dbResult = dbResult / divideBy;
+            }
+            if(convertNeg){
+                dbResult = dbResult * (double) -1;
+            }
             dbReturnValue = BigDecimal.valueOf(dbResult).setScale(0, RoundingMode.HALF_UP).doubleValue();
         }catch(Exception Excep){
             //Return Null
