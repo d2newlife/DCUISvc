@@ -40,6 +40,10 @@ public class CConst {
     public static final String ROWCALC="ROWCALC";
     public static final String SORTASC="?sort=asc";
     public static final String SORTDESC="?sort=desc";
+    public static final String NODEPATHCFLOW="cashflow";
+    public static final String NODEPATHBSHEET="balancesheet";
+    public static final String NODEPATHISTAT="income";
+    public static final String NPATHRDATE="reportdate";
 
     //Calculate
     public static final String FCF="FCF";

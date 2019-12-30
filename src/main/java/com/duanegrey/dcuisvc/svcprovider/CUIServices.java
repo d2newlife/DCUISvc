@@ -4,10 +4,8 @@ import com.duanegrey.dcuisvc.config.CAppProperties;
 import com.duanegrey.dcuisvc.interfaces.IGraphTemplate;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
 import com.duanegrey.dcuisvc.model.CSeriesGraph;
-import com.duanegrey.dcuisvc.templates.BalanceRowTemplate;
+import com.duanegrey.dcuisvc.templates.*;
 import com.duanegrey.dcuisvc.model.CRowDesc;
-import com.duanegrey.dcuisvc.templates.CashRowTemplate;
-import com.duanegrey.dcuisvc.templates.IncomeRowTemplate;
 import com.duanegrey.dcuisvc.model.utility.CAudit;
 import com.duanegrey.dcuisvc.model.utility.CEntityData;
 import com.duanegrey.dcuisvc.util.CConst;
@@ -98,7 +96,7 @@ public class CUIServices {
             String szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null, szType); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
-                JsonNode cashFlowNode = responseJson.path("cashflow");
+                JsonNode cashFlowNode = responseJson.path(CConst.NODEPATHCFLOW);
                 if (!cashFlowNode.isMissingNode()) {
                     int index = 0;
                     if (cashFlowNode.isArray()) {
@@ -144,7 +142,7 @@ public class CUIServices {
             String szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null,szType); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
-                JsonNode incomeNode = responseJson.path("income");
+                JsonNode incomeNode = responseJson.path(CConst.NODEPATHISTAT);
                 if (!incomeNode.isMissingNode()) {
                     int index = 0;
                     if (incomeNode.isArray()) {
@@ -189,7 +187,7 @@ public class CUIServices {
             String szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null, szType); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
-                JsonNode balanceNode = responseJson.path("balancesheet");
+                JsonNode balanceNode = responseJson.path(CConst.NODEPATHBSHEET);
                 if (!balanceNode.isMissingNode()) {
                     int index = 0;
                     if (balanceNode.isArray()) {
@@ -384,7 +382,10 @@ public class CUIServices {
         CSeriesGraph seriesGraph = null;
         boolean bBadFinType = false;
         String szURL = "";
+        String szNodePath = "";
         CEntityData entityData;
+        String[] arrayKeys;
+        IGraphTemplate graphTemplate=null;
         if(null != szType && szType.length() >0 && null != szSymbol && szSymbol.length()>0 && null != szFinType && szFinType.length()>0) {
             szSymbol = genLib.removeBadChars(szSymbol);
             szType = genLib.removeBadChars(szType);
@@ -394,14 +395,20 @@ public class CUIServices {
                 case CConst.CFLOW:
                     szURL = buildURL(CConst.CASHFLOW_DATA, szSymbol, null, null, szType); //Build URL
                     szURL = szURL.concat(CConst.SORTASC);
+                    szNodePath = CConst.NODEPATHCFLOW;
+                    graphTemplate = new CashGraphTemplate();
                     break;
                 case CConst.BSHEET:
                     szURL = buildURL(CConst.BALANCESHEET_DATA, szSymbol, null, null, szType); //Build URL
                     szURL = szURL.concat(CConst.SORTASC);
+                    szNodePath = CConst.NODEPATHBSHEET;
+                    graphTemplate = new BalanceGraphTemplate();
                     break;
                 case CConst.ISTAT:
                     szURL = buildURL(CConst.INCOME_DATA, szSymbol, null, null,szType); //Build URL
                     szURL = szURL.concat(CConst.SORTASC);
+                    szNodePath = CConst.NODEPATHISTAT;
+                    graphTemplate = new IncomeGraphTemplate();
                     break;
                 default:
                     bBadFinType = true;
@@ -410,9 +417,29 @@ public class CUIServices {
             if(bBadFinType){
                 entityData = entityBuilder.buildResponse(CConst.BADREQUEST, null);
             }else {
-                //Call URL
-                //Save Key Order, and Pus into a Map
-                //Call BuildFinGraph
+                JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+                if (null != responseJson) { //Loop Through the Response
+                    JsonNode dataNode = responseJson.path(szNodePath);
+                    if (!dataNode.isMissingNode()) {
+                        int index = 0;
+                        if (dataNode.isArray()) {
+                            arrayKeys = new String[dataNode.size()];
+                            Map<String, JsonNode> mapTemp = new HashMap<>();
+                            for(JsonNode jsonData : dataNode){ //Save Key Order, and Pus into a Map
+                                String szReportDate = jsonData.path(CConst.NPATHRDATE).asText();
+                                arrayKeys[index]=szReportDate;
+                                mapTemp.put(szReportDate,jsonData);
+                                index++;
+                            }
+                            seriesGraph = buildFinGraph(graphTemplate,arrayKeys,mapTemp);  //Call BuildFinGraph
+                        }
+                        entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+                    } else {
+                        entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                    }
+                } else {
+                    entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+                }
                 entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
             }
         }else{
