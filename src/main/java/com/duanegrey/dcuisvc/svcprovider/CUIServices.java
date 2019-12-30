@@ -294,7 +294,6 @@ public class CUIServices {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
         CAudit auditInfo = new CAudit(szCorelID, "NONE");
         CEntityData entityData;
-        Timestamp tsRange = null;
         ArrayList<Object[]> listResults = new ArrayList<Object[]>();
         JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
         String[] arrayKeys = {"symbol","companyname","ccctype","ttmDividendRate"};
@@ -529,10 +528,10 @@ public class CUIServices {
         if(null != szCashFlow && szCashFlow.length()>0 && null != szCapExpend && szCapExpend.length()>0){
             try {
                 //Convert to Doubles
-                double dbCashFlow = Double.valueOf(szCashFlow).doubleValue();
-                double dbCapExpend = Double.valueOf(szCapExpend).doubleValue();
+                double dbCashFlow = Double.parseDouble(szCashFlow);
+                double dbCapExpend = Double.parseDouble(szCapExpend);
                 double dbTotal = dbCashFlow + dbCapExpend; //Add Together
-                if(divideBy >  Double.valueOf(0).doubleValue()){ //Divide if DivideBy Set
+                if(divideBy > (double) 0){ //Divide if DivideBy Set
                     dbTotal = dbTotal / divideBy;
                 }
                 szReturn = String.format("%,.0f",dbTotal);
@@ -544,7 +543,7 @@ public class CUIServices {
     public Object prepDouble(String szValue, double divideBy){
         Double dbReturnValue = null;
         try{
-            double dbReturn = Double.valueOf(szValue).doubleValue();
+            double dbReturn = Double.parseDouble(szValue);
             double dbResult = dbReturn / divideBy;
             dbReturnValue = BigDecimal.valueOf(dbResult).setScale(0, RoundingMode.HALF_UP).doubleValue();
         }catch(Exception Excep){
@@ -554,9 +553,9 @@ public class CUIServices {
     }
 
     public String evaluteDouble(String szValue, double divideBy){
-        String returnValue = null;
+        String returnValue;
         try{
-            double dbReturn = Double.valueOf(szValue).doubleValue();
+            double dbReturn = Double.parseDouble(szValue);
             double dbResult = dbReturn / divideBy;
             returnValue = String.format("%,.0f",dbResult);
         }catch(Exception Excep){
@@ -566,7 +565,7 @@ public class CUIServices {
     }
 
     private Object[] prepareArray(JsonNode objNode, String[] arrayKeys){
-        Object[] resultArray = null;
+        Object[] resultArray;
         int index;
         if(null != objNode) {
             resultArray = new Object[arrayKeys.length];
@@ -580,8 +579,8 @@ public class CUIServices {
     }
 
     private Object[] prepareArray(JsonNode objNode, String[] arrayKeys, String szMonth){
-        String jsonValue = "";
-        Object[] resultArray = null;
+        String jsonValue;
+        Object[] resultArray;
         int index;
         if(null != objNode) {
             resultArray = new Object[arrayKeys.length];
@@ -603,7 +602,7 @@ public class CUIServices {
     }
 
     private String buildURL(String szURL, String szSymbol, String szRange, String szSector, String szType){
-        String finalURL = null;
+        String finalURL;
         finalURL = szURL.replace("<host>",appProperties.getDataHost()).replace("<port>",appProperties.getDataPort());
         if(null != szSymbol && szSymbol.length()>0){
             finalURL = finalURL.replace("<symbol>",szSymbol);
@@ -626,7 +625,7 @@ public class CUIServices {
             //BuildURL
             HttpHeaders headers = new HttpHeaders();
             headers.set("accept", "application/json");
-            HttpEntity requestEntity = new HttpEntity<>(null, headers);
+            HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
             ResponseEntity<JsonNode> response = restTemplate.exchange(szURL, HttpMethod.GET, requestEntity, JsonNode.class);
             jsonResponse = response.getBody();
         } catch (Exception Excep) {
