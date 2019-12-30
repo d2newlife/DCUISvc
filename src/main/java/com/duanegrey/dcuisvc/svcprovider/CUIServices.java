@@ -471,6 +471,7 @@ public class CUIServices {
                                 break;
                         }
                     }
+                    listSeriesInfo.add(new CSeriesInfo(graphDesc.getGraphLabel(),objTemp));
                 }else{
                     for(int dindex=0; dindex < arrayKeys.length; dindex++) {
                         JsonNode objNode = mapData.get(arrayKeys[dindex]);
@@ -483,8 +484,10 @@ public class CUIServices {
                             }
                         }
                     }
+                    listSeriesInfo.add(new CSeriesInfo(graphDesc.getGraphLabel(),objTemp));
                 }
             }
+            seriesGraph.setListSeriesInfo(listSeriesInfo);
         }
         return seriesGraph;
     }

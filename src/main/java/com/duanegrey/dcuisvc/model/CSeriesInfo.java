@@ -4,22 +4,22 @@ import java.util.List;
 
 public class CSeriesInfo {
     private String szLabel;
-    private List<Object> objDataList;
+    private Object[] objDataArray;
 
-    public CSeriesInfo(String szLabel, List<Object> objDataList) {
+    public CSeriesInfo(String szLabel, Object[] objDataArray) {
         this.szLabel = szLabel;
-        this.objDataList = objDataList;
+        this.objDataArray = objDataArray;
     }
 
     public String getSzLabel() {
         return szLabel;
     }
 
-    public List<Object> getObjDataList() {
-        return objDataList;
+    public  Object[] getObjDataList() {
+        return objDataArray;
     }
 
     public CSeriesOutput getSeriesOutput(){
-        return new CSeriesOutput(szLabel, objDataList.toArray());
+        return new CSeriesOutput(szLabel, objDataArray);
     }
 }
