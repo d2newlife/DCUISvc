@@ -3,6 +3,7 @@ package com.duanegrey.dcuisvc.svcprovider;
 import com.duanegrey.dcuisvc.config.CAppProperties;
 import com.duanegrey.dcuisvc.interfaces.IGraphTemplate;
 import com.duanegrey.dcuisvc.interfaces.IRowTemplate;
+import com.duanegrey.dcuisvc.model.CGraphDesc;
 import com.duanegrey.dcuisvc.model.CSeriesGraph;
 import com.duanegrey.dcuisvc.templates.*;
 import com.duanegrey.dcuisvc.model.CRowDesc;
@@ -450,7 +451,11 @@ public class CUIServices {
 
     private CSeriesGraph buildFinGraph(IGraphTemplate graphTemplate, String[] arrayKeys, Map<String, JsonNode> mapData){
         CSeriesGraph seriesGraph = null;
-            //Get FinData In the order of the arrayKeys
+        Object pointStart; //TODO NEXT ITEM IS TO PULL YEAR FROM DATE AS STARTING POINT FOR GRAPH
+        List<CGraphDesc> listGraphDesc = graphTemplate.getGraphList();
+        for(CGraphDesc graphDesc : listGraphDesc){
+            Object[] objTemp = new Object[arrayKeys.length];//Create temp Object Array
+        }
         return seriesGraph;
     }
 
