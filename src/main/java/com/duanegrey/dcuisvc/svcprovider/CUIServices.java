@@ -46,6 +46,27 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/stock/suggest")
+    ResponseEntity<JsonNode> getStockSuggest(@RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+
+        String szURL = buildURL(CConst.SUGGEST,null,null,null, null); //Build URL
+        JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+        if(null != responseJson) {
+            entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+            returnJSON =responseJson;
+        }else
+        {
+            entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+        }
+        return (new ResponseEntity<>(returnJSON, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+
+    @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/paymonth/{szMonth}")
     ResponseEntity getPayMonth(@PathVariable String szMonth, @RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
