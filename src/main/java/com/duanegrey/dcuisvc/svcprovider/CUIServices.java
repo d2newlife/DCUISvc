@@ -46,6 +46,37 @@ public class CUIServices {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/divclarity/v1/uidata/stock/suggest2")
+    ResponseEntity<String[]> getStockSuggest2(@RequestHeader HttpHeaders requestHeaders) {
+        String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
+        CAudit auditInfo = new CAudit(szCorelID, "NONE");
+        CEntityData entityData;
+        JsonNode returnJSON = JsonNodeFactory.instance.arrayNode();;
+        String[] stringArray = null;
+
+        String szURL = buildURL(CConst.SUGGEST,null,null,null, null); //Build URL
+        JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
+        if(null != responseJson && responseJson.isArray()) {
+            entityData = entityBuilder.buildResponse(CConst.SUCCESS, null);
+            stringArray = new String[responseJson.size()];
+            int index = 0;
+            for (JsonNode objNode : responseJson) {
+                String szSuggest = objNode.path("text").asText();
+                if (null != szSuggest && szSuggest.length() > 27) {
+                    szSuggest = szSuggest.substring(0, 27).concat("...");
+                    stringArray[index] = szSuggest;
+                } else if (null != szSuggest) {
+                    stringArray[index] = szSuggest;
+                }
+                index++;
+            }
+        }else{
+            entityData = entityBuilder.buildResponse(CConst.INTERNALERR, null);
+        }
+        return (new ResponseEntity<>(stringArray, entityData.getHeaders(), entityData.getHttpStatus()));
+    }
+
+    @CrossOrigin(origins = "*")
     @GetMapping("/divclarity/v1/uidata/stock/suggest")
     ResponseEntity<JsonNode> getStockSuggest(@RequestHeader HttpHeaders requestHeaders) {
         String szCorelID = genLib.getHeaderData(requestHeaders, CConst.CORELID, UUID.randomUUID().toString()); //X-Request-Correlation-ID : Retrieve Correlation ID or Set If Missing
