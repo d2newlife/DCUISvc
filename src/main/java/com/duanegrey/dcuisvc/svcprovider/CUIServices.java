@@ -111,6 +111,7 @@ public class CUIServices {
         if(null != szMonth && szMonth.length() >0) {
             szMonth = genLib.removeBadChars(szMonth);
             String monthNumber = genLib.convertMonth(szMonth);
+            szMonth = genLib.getMonthName(monthNumber);
             String szURL = buildURL(CConst.PAYMONTH_DATA, null, null, null, monthNumber); //Build URL
             JsonNode responseJson = callAPI(szURL);//Call API & GetResponse
             if (null != responseJson) { //Loop Through the Response
@@ -519,7 +520,7 @@ public class CUIServices {
                             case CConst.FCF:
                                 Double dbReturn = calcFreeCashFlow(objNode, graphDesc.getDivideBy());
                                 if(null != dbReturn && graphDesc.isbConvertIfNeg()){dbReturn = dbReturn * -1;}
-                                objTemp[dindex] = dbReturn.intValue();
+                                if(null != dbReturn){objTemp[dindex] = dbReturn.intValue();}
                                 break;
                             default:
                                 break;
@@ -697,12 +698,21 @@ public class CUIServices {
         Double dbReturn=null;
         String szCashFlow =  jsonNode.path("cashflow").asText();//Get JSON Data
         String szCapExpend =  jsonNode.path("capitalexpenditures").asText();//Get JSON Data
-        if(null != szCashFlow && szCashFlow.length()>0 && null != szCapExpend && szCapExpend.length()>0){
+        if(null != szCashFlow && szCashFlow.length()>0 && !szCashFlow.equalsIgnoreCase("null") && null != szCapExpend && szCapExpend.length()>0 && !szCapExpend.equalsIgnoreCase("null")){
             try {
                 //Convert to Doubles
                 double dbCashFlow = Double.parseDouble(szCashFlow);
                 double dbCapExpend = Double.parseDouble(szCapExpend);
-                double dbTotal = dbCashFlow + dbCapExpend; //Add Together
+                double dbTotal = dbCashFlow + dbCapExpend; //Add Together8
+                if(divideBy > (double) 0){ //Divide if DivideBy Set
+                    dbTotal = dbTotal / divideBy;
+                    dbReturn = dbTotal;
+                }
+            }catch(Exception Excep){}
+        }else if(null != szCashFlow && szCashFlow.length()>0 && !szCashFlow.equalsIgnoreCase("null")){
+            try {
+                double dbCashFlow = Double.parseDouble(szCashFlow);
+                double dbTotal = dbCashFlow;
                 if(divideBy > (double) 0){ //Divide if DivideBy Set
                     dbTotal = dbTotal / divideBy;
                     dbReturn = dbTotal;
