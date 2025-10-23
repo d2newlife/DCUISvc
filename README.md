@@ -8,7 +8,9 @@
 
 ## 📊 Project Tagline
 
-A robust Spring Boot microservice that provides financial data APIs for dividend tracking, stock analysis, and comprehensive financial statement visualization. Built with enterprise-grade architecture and RESTful API design principles.
+The main purpose of this code was to make it significanlty easier to display Stock Information pullled from the services provided b
+the DCDataSvc repository. The data needs to be in specific formats display Tabular and Graph data when using specific a JavaScript UI
+components. I decided to do the data formatting in the this code rather than on the client side in JavaScript.
 
 ## 📑 Table of Contents
 
@@ -27,7 +29,8 @@ A robust Spring Boot microservice that provides financial data APIs for dividend
 ## 💡 About The Project
 
 ### Motivation
-DivClarity UI Data Service was built to solve the critical need for reliable, scalable financial data aggregation and transformation. In today's fast-paced financial markets, having access to clean, structured financial data is essential for making informed investment decisions.
+DivClarity UI Data Service was built to solve the critical need for reliable, scalable financial data aggregation and transformation. I have always
+been very interested in dividend stocks and wanted to work on a platform that can display data that would later be used for analysis.
 
 ### Problem Solved
 This microservice addresses the complexity of financial data integration by providing a unified REST API that aggregates stock information, dividend data, financial statements (balance sheets, income statements, cash flow), and sector analysis into standardized, consumable formats for frontend applications.
